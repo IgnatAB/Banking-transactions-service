@@ -1,8 +1,22 @@
 # Compiled class file
 *.class
 
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+
 # Log file
 *.log
+
+# IntelliJ
+/.idea
+*.iml
+
+# Spring Boot
+spring-boot-devtools.properties
+
+# OS
+Thumbs.db
 
 # BlueJ files
 *.ctxt
