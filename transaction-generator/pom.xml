@@ -53,6 +53,13 @@
       <version>7.4</version>
     </dependency>
 
+    <!-- for RandomStringUtils -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.18.0</version>
+    </dependency>
+
     <!-- tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
