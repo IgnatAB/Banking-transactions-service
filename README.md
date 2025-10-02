@@ -45,8 +45,8 @@ ________________________________________
 ## Технологический стек
 •	Java 17  
 •	Spring Boot 3  
-•	Spring Kafka  
-•	PostgreSQL (для хранения счетов и балансов)  
+•	Spring Kafka  3.7
+•	PostgreSQL (для хранения счетов и балансов)  16
 •	Docker + Docker Compose (для Kafka и БД)  
 •	Testcontainers (для интеграционных тестов)  
 •	Lombok, MapStruct, JUnit5, Mockito  
