@@ -16,12 +16,6 @@
     <module>balance-service</module>
     <module>notification-service</module>
     <module>dlq-service</module>
-    <module>common</module>
-    <module>transaction-generator</module>
-    <module>transaction-processor</module>
-    <module>balance-service</module>
-    <module>notification-service</module>
-    <module>dlq-service</module>
   </modules>
 
   <dependencyManagement>

@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: passwd111
     ports:
-      - "5241:5232"
+      - "5441:5432"
     volumes:
       - "banking_transactions_db:/var/lib/postgresql/data"
       - "./init-scripts:/docker-entrypoint-initdb.d"
