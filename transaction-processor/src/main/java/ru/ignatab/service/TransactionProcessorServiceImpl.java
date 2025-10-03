@@ -25,10 +25,10 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
   private final TransactionMapper transactionMapper;
   private final KafkaTemplate<String, TransactionDto> kafkaTemplate;
 
-  @Value("${app.kafka.topics.rejected}")
+  @Value("${topics.rejected}")
   private String rejectedTopic;
 
-  @Value("${app.kafka.topics.dlq}")
+  @Value("${topics.dlq}")
   private String dlqTopic;
 
   @Override
