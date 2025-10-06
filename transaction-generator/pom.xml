@@ -60,6 +60,16 @@
       <version>3.18.0</version>
     </dependency>
 
+    <!-- for prometheus-->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.micrometer</groupId>
+      <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+
     <!-- tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
