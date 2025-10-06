@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: transaction-generator
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        spring.json.add.type.headers: false   # не добавлять тип в заголовки
+
+generator:
+  topic: transactions          # Kafka topic, куда публикуем
+  threads: 5                   # сколько потоков будет генерировать транзакции
+  transactions-per-thread: 50  # сколько транзакций генерирует каждый поток
+  max-sleep-ms: 200            # максимальная задержка между транзакциями
+  clients: 50                  # количество клиентов, совершающих транзакции
