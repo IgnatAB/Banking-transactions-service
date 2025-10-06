@@ -25,6 +25,9 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
   private final TransactionMapper transactionMapper;
   private final KafkaTemplate<String, TransactionDto> kafkaTemplate;
 
+  @Value("${topics.approved}")
+  private String approvedTopic;
+
   @Value("${topics.rejected}")
   private String rejectedTopic;
 
@@ -40,9 +43,6 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           transaction.type(),
           transaction.status());
 
-      Transaction entity = transactionMapper.toEntity(transaction);
-      repository.save(entity);
-
       if (transaction.amount().compareTo(BigDecimal.ZERO) <= 0) {
         throw new BusinessValidationException("Сумма транзакции должна быть больше 0");
       }
@@ -50,7 +50,25 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
         throw new BusinessValidationException("Счета отправителя и получателя совпадают");
       }
 
+      Transaction entity = transactionMapper.toEntity(transaction);
+      repository.save(entity);
+
       log.info("Transaction {} processed successfully", transaction.transactionId());
+
+      TransactionDto approved = new TransactionDto(
+          transaction.transactionId(),
+          transaction.clientId(),
+          transaction.fromAccount(),
+          transaction.toAccount(),
+          transaction.type(),
+          transaction.amount(),
+          transaction.createdAt(),
+          TransactionStatus.SUCCESS,
+          null
+      );
+      kafkaTemplate.send(approvedTopic, transaction.transactionId().toString(), approved);
+      log.info("Transaction id={} sent to approved topic", transaction.transactionId());
+
 
     } catch (BusinessValidationException e) {
       log.warn(
@@ -96,7 +114,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
               transaction.toAccount(),
               transaction.type(),
               transaction.amount(),
-              transaction.timestamp(),
+              transaction.createdAt(),
               TransactionStatus.FAILED,
               errorMessage);
       kafkaTemplate.send(rejectedTopic, transaction.transactionId().toString(), rejected);
@@ -122,7 +140,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
               transaction.toAccount(),
               transaction.type(),
               transaction.amount(),
-              transaction.timestamp(),
+              transaction.createdAt(),
               TransactionStatus.FAILED,
               errorMessage);
       kafkaTemplate.send(dlqTopic, transaction.transactionId().toString(), failed);

@@ -34,10 +34,10 @@ public class Transaction {
   @Column(nullable = false)
   private UUID clientId;
 
-  @Column(nullable = false)
+
   private String fromAccount;
 
-  @Column(nullable = false)
+
   private String toAccount;
 
   @Enumerated(EnumType.STRING)

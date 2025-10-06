@@ -37,7 +37,7 @@ public record TransactionDto(
     /**
      * Время транзакции
      */
- LocalDateTime timestamp,
+ LocalDateTime createdAt,
     /**
      * Результат транзакции, передает одно из значений {@link TransactionStatus}
      */
