@@ -12,7 +12,7 @@ import ru.ignatab.model.Transaction;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2025-10-06T16:57:43+0300",
+    date = "2025-10-07T18:29:55+0300",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.14 (Amazon.com Inc.)"
 )
 @Component
