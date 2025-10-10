@@ -11,6 +11,8 @@ spring:
       retries: 3
       properties:
         spring.json.add.type.headers: false   # не добавлять тип в заголовки
+    consumer:
+      group-id: dummy
 
 generator:
   topic: transactions          # Kafka topic, куда публикуем

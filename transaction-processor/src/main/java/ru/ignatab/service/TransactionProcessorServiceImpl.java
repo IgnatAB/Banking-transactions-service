@@ -9,10 +9,12 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.ignatab.dto.TransactionDto;
 import ru.ignatab.enums.TransactionStatus;
 import ru.ignatab.exception.BusinessValidationException;
 import ru.ignatab.mapper.TransactionMapper;
+import ru.ignatab.metrics.TransactionProcessorMetrics;
 import ru.ignatab.model.Transaction;
 import ru.ignatab.repository.TransactionRepository;
 
@@ -24,6 +26,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
   private final TransactionRepository repository;
   private final TransactionMapper transactionMapper;
   private final KafkaTemplate<String, TransactionDto> kafkaTemplate;
+  private final TransactionProcessorMetrics metrics;
 
   @Value("${topics.approved}")
   private String approvedTopic;
@@ -35,6 +38,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
   private String dlqTopic;
 
   @Override
+  @Transactional
   public void processTransaction(TransactionDto transaction) {
     try {
       log.info(
@@ -49,26 +53,19 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
       if (Objects.equals(transaction.fromAccount(), transaction.toAccount())) {
         throw new BusinessValidationException("Счета отправителя и получателя совпадают");
       }
+      if (transaction.status() == TransactionStatus.SUCCESS) {
+        Transaction entity = transactionMapper.toEntity(transaction);
+        repository.save(entity);
+        metrics.incrementDb();
 
-      Transaction entity = transactionMapper.toEntity(transaction);
-      repository.save(entity);
+        log.info("Transaction {} processed successfully", transaction.transactionId());
 
-      log.info("Transaction {} processed successfully", transaction.transactionId());
-
-      TransactionDto approved = new TransactionDto(
-          transaction.transactionId(),
-          transaction.clientId(),
-          transaction.fromAccount(),
-          transaction.toAccount(),
-          transaction.type(),
-          transaction.amount(),
-          transaction.createdAt(),
-          TransactionStatus.SUCCESS,
-          null
-      );
-      kafkaTemplate.send(approvedTopic, transaction.transactionId().toString(), approved);
-      log.info("Transaction id={} sent to approved topic", transaction.transactionId());
-
+        TransactionDto approved = buildTransaction(transaction, TransactionStatus.SUCCESS, null);
+        kafkaTemplate.send(approvedTopic, transaction.transactionId().toString(), approved);
+        metrics.incrementApproved();
+        log.info(
+            "Transaction id={} sent to topic '{}'", transaction.transactionId(), approvedTopic);
+      }
 
     } catch (BusinessValidationException e) {
       log.warn(
@@ -76,6 +73,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           transaction.transactionId(),
           e.getMessage());
       sendToRejected(transaction, e.getMessage());
+      metrics.incrementRejected();
 
     } catch (DataAccessException e) {
       log.error(
@@ -84,6 +82,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e.getMessage(),
           e);
       sendToDlq(transaction, "Database error: " + e.getMessage());
+      metrics.incrementDlq();
 
     } catch (KafkaException e) {
       log.error(
@@ -92,6 +91,7 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e.getMessage(),
           e);
       sendToDlq(transaction, "Kafka error: " + e.getMessage());
+      metrics.incrementDlq();
 
     } catch (Exception e) {
 
@@ -101,24 +101,17 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e.getMessage(),
           e);
       sendToDlq(transaction, "Unexpected error: " + e.getMessage());
+      metrics.incrementDlq();
     }
   }
 
   public void sendToRejected(TransactionDto transaction, String errorMessage) {
     try {
       TransactionDto rejected =
-          new TransactionDto(
-              transaction.transactionId(),
-              transaction.clientId(),
-              transaction.fromAccount(),
-              transaction.toAccount(),
-              transaction.type(),
-              transaction.amount(),
-              transaction.createdAt(),
-              TransactionStatus.FAILED,
-              errorMessage);
+          buildTransaction(transaction, TransactionStatus.FAILED, errorMessage);
       kafkaTemplate.send(rejectedTopic, transaction.transactionId().toString(), rejected);
-      log.info("Transaction id={} sent to rejected topic", transaction.transactionId());
+      metrics.incrementRejected();
+      log.info("Transaction id={} sent to topic '{}'", transaction.transactionId(), rejectedTopic);
     } catch (Exception e) {
       log.error(
           "Failed to send transaction id={} to rejected topic, reason={}",
@@ -127,23 +120,15 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e);
 
       sendToDlq(transaction, "Rejected fallback error: " + e.getMessage());
+      metrics.incrementDlq();
     }
   }
 
   public void sendToDlq(TransactionDto transaction, String errorMessage) {
     try {
-      TransactionDto failed =
-          new TransactionDto(
-              transaction.transactionId(),
-              transaction.clientId(),
-              transaction.fromAccount(),
-              transaction.toAccount(),
-              transaction.type(),
-              transaction.amount(),
-              transaction.createdAt(),
-              TransactionStatus.FAILED,
-              errorMessage);
+      TransactionDto failed = buildTransaction(transaction, TransactionStatus.FAILED, errorMessage);
       kafkaTemplate.send(dlqTopic, transaction.transactionId().toString(), failed);
+      metrics.incrementDlq();
       log.warn(
           "Transaction id={} sent to DLQ, reason={}", transaction.transactionId(), errorMessage);
     } catch (Exception e) {
@@ -153,5 +138,19 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e.getMessage(),
           e);
     }
+  }
+
+  private TransactionDto buildTransaction(
+      TransactionDto original, TransactionStatus status, String errorMessage) {
+    return new TransactionDto(
+        original.transactionId(),
+        original.clientId(),
+        original.fromAccount(),
+        original.toAccount(),
+        original.type(),
+        original.amount(),
+        original.createdAt(),
+        status,
+        errorMessage);
   }
 }
