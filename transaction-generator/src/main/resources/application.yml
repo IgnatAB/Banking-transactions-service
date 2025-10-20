@@ -13,6 +13,8 @@ spring:
         spring.json.add.type.headers: false   # не добавлять тип в заголовки
     consumer:
       group-id: dummy
+    properties:
+      security.protocol: PLAINTEXT
 
 generator:
   topic: transactions          # Kafka topic, куда публикуем
