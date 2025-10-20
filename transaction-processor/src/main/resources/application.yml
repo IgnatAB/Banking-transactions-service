@@ -25,7 +25,7 @@ spring:
     default_schema: banking_transactions
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
     consumer:
       group-id: transaction-processor-group
       auto-offset-reset: earliest
