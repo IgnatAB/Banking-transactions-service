@@ -23,7 +23,7 @@ public class TransactionProcessorMetrics {
                 .register(registry);
 
         this.dlqTransactionCounter =
-            Counter.builder("transaction_dlq_total")
+            Counter.builder("transactions_dlq_total")
                 .description("Количество не обработанных уведомлений")
                 .register(registry);
 

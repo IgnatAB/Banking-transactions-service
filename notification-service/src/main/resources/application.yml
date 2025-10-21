@@ -36,4 +36,4 @@ management:
 topics:
   approved: approved-transactions
   rejected: rejected-transactions
-  dlq: transaction-dlq
+  dlq: transactions-dlq
