@@ -58,6 +58,11 @@
       <artifactId>jackson-datatype-jsr310</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>net.logstash.logback</groupId>
+      <artifactId>logstash-logback-encoder</artifactId>
+    </dependency>
+
     <!-- Actuator для метрик -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

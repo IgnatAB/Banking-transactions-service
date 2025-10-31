@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
-
 /**
  * Конфигурационный класс для определения параметров генерации транзакций
  */
@@ -15,7 +14,6 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class GeneratorProperties {
-
     /**
      * название топика kafka
      */
@@ -36,5 +34,4 @@ public class GeneratorProperties {
      * Количество клиентов, совершающих транзакции
      */
     private int clients;
-
 }

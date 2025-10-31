@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.KafkaException;
@@ -58,6 +59,10 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
   @Override
   @Transactional
   public void processTransaction(TransactionDto transaction) {
+
+    MDC.put("transactionId", String.valueOf(transaction.transactionId()));
+    MDC.put("clientId", String.valueOf(transaction.clientId()));
+
     try {
       log.info(
           "Processing transaction id={}, type={}, status={}",
@@ -101,7 +106,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
                   ex);
               sendToDlq(transaction, "Failed to send approved: " + ex.getMessage());
             });
-        log.info("Transaction {} routing to approve-transaction topic ", transaction.transactionId());
+        log.info(
+            "Transaction {} routing to approve-transaction topic ", transaction.transactionId());
         log.info("Processing finished for transaction {}", transaction.transactionId());
         return;
       }
@@ -142,6 +148,9 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
           e.getMessage(),
           e);
       sendToDlq(transaction, "Unexpected error: " + e.getMessage());
+
+    } finally {
+      MDC.clear();
     }
   }
 
@@ -152,6 +161,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
    * @param errorMessage описание причины отклонения
    */
   public void sendToRejected(TransactionDto transaction, String errorMessage) {
+
+    MDC.put("topic", rejectedTopic);
     TransactionDto rejected = buildTransaction(transaction, TransactionStatus.FAILED, errorMessage);
 
     Message<TransactionDto> message =
@@ -165,7 +176,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
     sendToTopicWithCallbackMessage(
         rejectedTopic,
         transaction.transactionId().toString(),
-        message,() -> {
+        message,
+        () -> {
           metrics.incrementRejected();
           log.warn(
               "Transaction id={} sent to rejected-transaction topic, reason={}",
@@ -189,6 +201,8 @@ public class TransactionProcessorServiceImpl implements TransactionProcessorServ
    * @param errorMessage причина помещения в DLQ
    */
   public void sendToDlq(TransactionDto transaction, String errorMessage) {
+
+    MDC.put("topic", dlqTopic);
     TransactionDto failed = buildTransaction(transaction, TransactionStatus.FAILED, errorMessage);
 
     Message<TransactionDto> message =

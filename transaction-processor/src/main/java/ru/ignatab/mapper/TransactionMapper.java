@@ -8,6 +8,5 @@ import ru.ignatab.model.Transaction;
 public interface TransactionMapper {
 
     Transaction toEntity (TransactionDto transactionDto);
-    TransactionDto toDto(Transaction entity);
 
 }

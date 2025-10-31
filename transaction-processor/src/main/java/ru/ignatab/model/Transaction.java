@@ -34,9 +34,7 @@ public class Transaction {
   @Column(nullable = false)
   private UUID clientId;
 
-
   private String fromAccount;
-
 
   private String toAccount;
 
