@@ -1,14 +1,12 @@
 <configuration scan="true">
 
-  <!-- Берем имя сервиса из spring.application.name -->
   <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name"/>
 
-  <!-- Абсолютный путь к общей папке логов -->
   <property name="LOG_PATH" value="E:/Kafka/logs"/>
 
-  <!-- JSON файл логов -->
   <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${LOG_PATH}/${SERVICE_NAME}.log</file>
+    <prudent>true</prudent>
 
     <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
       <providers>
@@ -38,7 +36,6 @@
     </rollingPolicy>
   </appender>
 
-  <!-- Консольный вывод -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>

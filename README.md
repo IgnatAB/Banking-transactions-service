@@ -65,7 +65,7 @@ ________________________________________
 •   Logstash-logback для обогащения и сбора логов  
 •   Prometheus и Grafana для сбора и просмотра метрик - счетчиков сообщений.
 ----------------------------------------
-## Как запустить
+### Как запустить
 Перед первым запуском сгенерируйте новый KAFKA_KRAFT_CLUSTER_ID командой:  
 docker run --rm bitnami/kafka:3.7 kafka-storage.sh random-uuid   
 Вы получите новый 22-значный ID кластера.  
@@ -79,7 +79,7 @@ docker run --rm bitnami/kafka:3.7 kafka-storage.sh random-uuid
 1. Transaction Generator  
 2. Transaction Processor  
 3. Notification Service  
-4. Dead Letter  
+4. Dead Letter
 5. 
 Kafka UI расположен тут. Смотрим инфу по кластеру.  
 http://localhost:8088/ui/clusters/local/consumer-groups  
