@@ -22,3 +22,14 @@ generator:
   transactions-per-thread: 50  # сколько транзакций генерирует каждый поток
   max-sleep-ms: 200            # максимальная задержка между транзакциями
   clients: 50                  # количество клиентов, совершающих транзакции
+
+logging:
+  pattern:
+    console: '{"@timestamp":"%d{yyyy-MM-dd HH:mm:ss}", "level":"%p", "message":"%m"}%n'
+  file:
+    path: logs
+  level:
+    root: INFO
+    ru.ignatab: DEBUG
+    org.springframework: WARN
+    org.apache.kafka: WARN

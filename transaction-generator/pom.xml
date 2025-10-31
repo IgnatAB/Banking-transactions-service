@@ -11,14 +11,14 @@
 
   <artifactId>transaction-generator</artifactId>
 
-  <properties>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-
   <dependencies>
+
+    <!-- common -->
+    <dependency>
+      <groupId>ru.ignatab</groupId>
+      <artifactId>common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Spring Boot Starter -->
     <dependency>
@@ -32,13 +32,6 @@
       <artifactId>spring-kafka</artifactId>
     </dependency>
 
-    <!-- common DTO  -->
-    <dependency>
-      <groupId>ru.ignatab</groupId>
-      <artifactId>common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
     <!-- Lombok-->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -50,7 +43,6 @@
     <dependency>
       <groupId>net.logstash.logback</groupId>
       <artifactId>logstash-logback-encoder</artifactId>
-      <version>7.4</version>
     </dependency>
 
     <!-- for RandomStringUtils -->

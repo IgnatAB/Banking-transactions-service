@@ -3,6 +3,7 @@ package ru.ignatab.service;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,17 @@ import ru.ignatab.dto.TransactionDto;
 import ru.ignatab.exception.NotificationSendException;
 import ru.ignatab.metrics.NotificationMetrics;
 
+/**
+ * Сервис имитирует отправку уведомлений клиентам о статусе транзакций.
+ *
+ * Использует MDC (Mapped Diagnostic Context) для добавления контекста транзакции в логи:
+ * - transactionId — идентификатор транзакции
+ * - clientId — идентификатор клиента
+ * - topic — Kafka-топик назначения при ошибках
+ *
+ * Это помогает отслеживать связанные события по одному клиенту или транзакции
+ * в логах распределённой системы.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,6 +37,9 @@ public class NotificationServiceImpl implements NotificationService {
 
   @Override
   public void sendApprovedNotification(TransactionDto transaction) {
+
+    MDC.put("transactionId", String.valueOf(transaction.transactionId()));
+    MDC.put("clientId", String.valueOf(transaction.clientId()));
     try {
       simulateRandomFailure(transaction);
       log.info(
@@ -36,11 +51,16 @@ public class NotificationServiceImpl implements NotificationService {
       metrics.incrementApproved();
     } catch (NotificationSendException e) {
       sendToDlq(transaction, e.getMessage());
+    } finally {
+      MDC.clear();
     }
   }
 
   @Override
   public void sendRejectedNotification(TransactionDto transaction) {
+
+    MDC.put("transactionId", String.valueOf(transaction.transactionId()));
+    MDC.put("clientId", String.valueOf(transaction.clientId()));
     try {
       log.info(
           "[Notify] Клиент {}: транзакция {} на сумму {} отклонена по причине {}",
@@ -52,6 +72,8 @@ public class NotificationServiceImpl implements NotificationService {
       metrics.incrementRejected();
     } catch (NotificationSendException e) {
       sendToDlq(transaction, e.getMessage());
+    } finally {
+      MDC.clear();
     }
   }
 
@@ -64,6 +86,7 @@ public class NotificationServiceImpl implements NotificationService {
   }
 
   private void sendToDlq(TransactionDto transaction, String reason) {
+    MDC.put("topic", dlqTopic);
     try {
       kafkaTemplate.send(dlqTopic, transaction.transactionId().toString(), transaction);
       log.warn(
@@ -71,6 +94,8 @@ public class NotificationServiceImpl implements NotificationService {
       metrics.incrementDlq();
     } catch (Exception e) {
       log.error("Ошибка отправки в DLQ: {}", e.getMessage(), e);
+    } finally {
+      MDC.clear();
     }
   }
 }

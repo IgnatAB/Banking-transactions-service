@@ -45,7 +45,7 @@ services:
       # docker run --rm bitnami/kafka:3.7 kafka-storage.sh random-uuid
       # параметр может называться по-разному в зависимости от разных источников образа,
       # например, в vanilla Kafka это будет KAFKA_CLUSTER_ID
-      - KAFKA_KRAFT_CLUSTER_ID=DM-XlNO0RqiKI6IqIfC2nQ
+      - KAFKA_KRAFT_CLUSTER_ID=T4zMU_eVRx6itbWqhwdeuA
 
     volumes:
       - "kafka1_data:/bitnami/kafka"
@@ -74,7 +74,7 @@ services:
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
       - KAFKA_CFG_GROUP_INITIAL_REBALANCE_DELAY_MS=0
 
-      - KAFKA_KRAFT_CLUSTER_ID=DM-XlNO0RqiKI6IqIfC2nQ
+      - KAFKA_KRAFT_CLUSTER_ID=T4zMU_eVRx6itbWqhwdeuA
 
     volumes:
       - "kafka2_data:/bitnami/kafka"
@@ -106,7 +106,7 @@ services:
       - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=2
       - KAFKA_CFG_GROUP_INITIAL_REBALANCE_DELAY_MS=0
 
-      - KAFKA_KRAFT_CLUSTER_ID=DM-XlNO0RqiKI6IqIfC2nQ
+      - KAFKA_KRAFT_CLUSTER_ID=T4zMU_eVRx6itbWqhwdeuA
 
     volumes:
       - "kafka3_data:/bitnami/kafka"
@@ -159,3 +159,4 @@ volumes:
     driver: local
   banking_transactions_db:
     driver: local
+    - ./logs:/app/logs

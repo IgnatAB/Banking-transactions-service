@@ -1,0 +1,53 @@
+<configuration scan="true">
+
+  <!-- Берем имя сервиса из spring.application.name -->
+  <springProperty scope="context" name="SERVICE_NAME" source="spring.application.name"/>
+
+  <!-- Абсолютный путь к общей папке логов -->
+  <property name="LOG_PATH" value="E:/Kafka/logs"/>
+
+  <!-- JSON файл логов -->
+  <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_PATH}/${SERVICE_NAME}.log</file>
+
+    <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+      <providers>
+        <timestamp>
+          <timeZone>UTC</timeZone>
+        </timestamp>
+        <pattern>
+          <pattern>
+            {
+            "service": "${SERVICE_NAME}",
+            "level": "%level",
+            "thread": "%thread",
+            "logger": "%logger",
+            "message": "%message",
+            "stack_trace": "%ex",
+            "txId": "%X{txId:-}",
+            "clientId": "%X{clientId:-}"
+            }
+          </pattern>
+        </pattern>
+      </providers>
+    </encoder>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${LOG_PATH}/${SERVICE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+  </appender>
+
+  <!-- Консольный вывод -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="JSON_FILE"/>
+  </root>
+
+</configuration>

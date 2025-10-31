@@ -37,3 +37,12 @@ topics:
   approved: approved-transactions
   rejected: rejected-transactions
   dlq: transactions-dlq
+
+logging:
+  file:
+    path: logs
+  level:
+    root: INFO
+    ru.ignatab: DEBUG
+    org.springframework: WARN
+    org.apache.kafka: WARN
